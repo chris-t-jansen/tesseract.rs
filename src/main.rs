@@ -6,6 +6,11 @@
 const ww: usize = 100;
 const wh: usize = 50;
 
+const from4: [f64; 4] = [5.0, 0.0, 0.0, 0.0];
+const to4: [f64; 4] =  [0.0, 0.0, 0.0, 0.0];
+const up4: [f64; 4] = [0.0, 1.0, 0.0, 0.0];
+const over4: [f64; 4] = [0.0, 0.0, 1.0, 0.0];
+
 #[derive(Clone, Copy)]
 struct Coord {
     pub x: usize,
@@ -271,21 +276,45 @@ fn rotXW4(result: &mut [f64; 16], t: f64) {
     result[15] = t.cos();
 }
 
-struct Conversions {
-    from4: [f64; 4],
-    to4: [f64; 4],
-    up4: [f64; 4],
-    over4: [f64; 4],
-}
+fn view4(result: &mut [f64; 16]) {
+    // column vectors
+    let mut Wa: [f64; 4] = [0.0; 4];
+    let mut Wb: [f64; 4] = [0.0; 4];
+    let mut Wc: [f64; 4] = [0.0; 4];
+    let mut Wd: [f64; 4] = [0.0; 4];
 
-impl Conversions {
-    pub fn default() -> Self {
-        Conversions {
-            from4: [5.0, 0.0, 0.0, 0.0],
-            to4: [0.0, 0.0, 0.0, 0.0],
-            up4: [0.0, 1.0, 0.0, 0.0],
-            over4: [0.0, 0.0, 1.0, 0.0],
-        }
+    for i in 0..4 {
+        Wa[i] = result[i + 0];
+        Wb[i] = result[i + 4];
+        Wc[i] = result[i + 8];
+        Wd[i] = result[i + 12];
+    }
+
+    let mut norm: f64;
+
+    // get the normalized Wd column-vector.
+    vecSub4(&mut Wd, to4, from4);
+    norm = norm4(Wd);
+    vecScale4(&mut Wd, 1.0 / norm);
+
+    // calculate the normalized Wa column-vector.
+    cross4(&mut Wa, up4, over4, Wd);
+    norm = norm4(Wa);
+    vecScale4(&mut Wa, 1.0 / norm);
+
+    // calculate the normalized Wb column-vector.
+    cross4(&mut Wb, over4, Wd, Wa);
+    norm = norm4(Wb);
+    vecScale4(&mut Wb, 1.0 / norm);
+
+    // calculate the Wc column-vector.
+    cross4(&mut Wc, Wd, Wa, Wb);
+
+    for i in 0..4 {
+        result[i + 0] = Wa[i];
+        result[i + 4] = Wb[i];
+        result[i + 8] = Wc[i];
+        result[i + 12] = Wd[i];
     }
 }
 
