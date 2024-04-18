@@ -475,9 +475,11 @@ pub fn run_animation() {
     loop {
         rotation += 0.01;
 
+        // Rotates the cube in 4-dimensional space
         rot_x_w_4(&mut rot_4, rotation);
         project_to_3d(PI / 3.0, view_mat_4, rot_4, &mut main_verts);
 
+        // Rotates the cube in 3-dimensional space
         rot_x_z_3(&mut rot_3, rotation * 0.3);
         project_to_2d(PI / 4.0, view_mat_3, rot_3, &mut main_verts);
 
